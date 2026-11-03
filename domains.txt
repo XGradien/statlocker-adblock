@@ -1,0 +1,127 @@
+# statlocker-adblock domain list
+# -----------------------------
+# Every domain below is dead-lettered to 127.0.0.1 on the local PC, which
+# stops the Statlocker companion app's third-party ad stack (bidders,
+# identity syncs, beacons, creatives) from loading.
+#
+# The Statlocker app itself, its stats, and its data endpoints are NOT
+# blocked. Blocking an apex domain also covers all of its subdomains
+# (Windows DNS falls back to the parent). Lines starting with # are comments.
+#
+# This file is updated automatically by the domain watcher
+# (.github/workflows/refresh-domains.yml), which monitors Statlocker's
+# public ad-surface pages and opens a pull request when new ad
+# infrastructure appears. Verified 2026-10-31 against the app's live cache
+# (224 observed hosts, all covered).
+
+# --- Playwire / RAMP (the app's ad engine; served via Intergient) ---
+intergient.com
+cdn.intergient.com
+pbc.intergient.com
+pbs.intergient.com
+cd836371f1d.cdn.intergient.com
+cdn.intergi.com
+intergi.com
+playwire.com
+
+# --- Google ad infrastructure ---
+doubleclick.net
+googleadservices.com
+googlesyndication.com
+googletagservices.com
+adtrafficquality.google
+fundingchoicesmessages.google.com
+imasdk.googleapis.com
+2mdn.net
+adsafeprotected.com
+test-adsafeprotected.com
+
+# --- Amazon ad infrastructure (specific subdomains only - amazon.com/a2z.com
+#     apexes stay reachable) ---
+amazon-adsystem.com
+tahoe-analytics.publishers.advertising.a2z.com
+cxm-bcn.publisher-services.amazon.dev
+
+# --- Ad exchanges / bidders ---
+casalemedia.com
+adnxs.com
+adnxs-simple.com
+criteo.net
+criteo.com
+pubmatic.com
+openxcdn.net
+openx.net
+crwdcntrl.net
+fastclick.net
+flashtalking.com
+id5-sync.com
+eu-1-id5-sync.com
+bidswitch.net
+magnite-audience-prod.com
+smartadserver.com
+indexww.com
+rtbhouse.com
+ad-delivery.net
+kueezrtb.com
+minutemedia-prebid.com
+the-ozone-project.com
+
+# --- Identity sync / data brokers ---
+intentiq.com
+confiant-integrations.net
+ups.analytics.yahoo.com
+connectid.analytics.yahoo.com
+analytics.yahoo.com
+tapad.com
+quantserve.com
+quantcount.com
+attekmi.co
+btloader.com
+btmessage.com
+hadronid.net
+liadm.com
+presage.io
+shb-sync.com
+thrtle.com
+simpli.fi
+fiftyt.com
+uidapi.co
+optable.co
+sharethrough.com
+nextmillmedia.com
+brand-display.com
+agkn.com
+durationmedia.net
+yellowblue.io
+media.net
+ad-score.com
+scorecardresearch.com
+imrworldwide.com
+adsrvr.org
+everesttech.net
+cootlogix.com
+
+# --- Sharing / widgets / misc ad delivery ---
+sharethis.com
+stackadapt.com
+rlcdn.com
+kargo.com
+adlightning.com
+ccgateway.net
+eyeota.net
+bbvms.com
+
+# --- Ad creatives / CDN edges ---
+ml314.com
+dns-finder.com
+d2qlq4kdetaeuz.cloudfront.net
+creativecdn.com
+secure-signals-gazetkowo-300234255994.europe-west4.run.app
+
+# --- FT static assets (used by Statlocker ad units) ---
+agen-assets.ftstatic.com
+ajs-assets.ftstatic.com
+
+# --- JW Player ad tech only (the JW Player video platform itself stays
+#     reachable so highlight playback works; only its ad-tech subdomain goes) ---
+prd.jwpltx.com

@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 300" font-family="Segoe UI, system-ui, sans-serif">
+  <rect width="960" height="300" rx="12" fill="#f6f8fa" stroke="#d0d7de"/>
+
+  <!-- Step 1 -->
+  <g>
+    <rect x="24" y="28" width="200" height="244" rx="10" fill="#ffffff" stroke="#d0d7de"/>
+    <circle cx="124" cy="76" r="22" fill="#1f883d"/>
+    <text x="124" y="84" text-anchor="middle" font-size="24" fill="#ffffff" font-weight="700">1</text>
+    <rect x="54" y="116" width="140" height="34" rx="6" fill="#1f883d"/>
+    <text x="124" y="139" text-anchor="middle" font-size="17" fill="#ffffff" font-weight="600">Code</text>
+    <text x="124" y="186" text-anchor="middle" font-size="15" fill="#57606a">Click the green</text>
+    <text x="124" y="206" text-anchor="middle" font-size="15" fill="#57606a">Code button,</text>
+    <text x="124" y="226" text-anchor="middle" font-size="15" fill="#1f2328" font-weight="600">then Download ZIP</text>
+  </g>
+
+  <!-- arrow -->
+  <path d="M232 150 L258 150" stroke="#8c959f" stroke-width="3" marker-end="url(#a)"/>
+
+  <!-- Step 2 -->
+  <g>
+    <rect x="268" y="28" width="200" height="244" rx="10" fill="#ffffff" stroke="#d0d7de"/>
+    <circle cx="368" cy="76" r="22" fill="#1f883d"/>
+    <text x="368" y="84" text-anchor="middle" font-size="24" fill="#ffffff" font-weight="700">2</text>
+    <rect x="306" y="116" width="124" height="34" rx="6" fill="none" stroke="#d0d7de" stroke-dasharray="5 4"/>
+    <text x="368" y="139" text-anchor="middle" font-size="16" fill="#57606a">folder</text>
+    <text x="368" y="186" text-anchor="middle" font-size="15" fill="#57606a">Unzip it</text>
+    <text x="368" y="206" text-anchor="middle" font-size="15" fill="#57606a">(right-click the</text>
+    <text x="368" y="226" text-anchor="middle" font-size="15" fill="#1f2328" font-weight="600">zip - Extract All)</text>
+  </g>
+
+  <path d="M476 150 L502 150" stroke="#8c959f" stroke-width="3" marker-end="url(#a)"/>
+
+  <!-- Step 3 -->
+  <g>
+    <rect x="512" y="28" width="200" height="244" rx="10" fill="#ffffff" stroke="#d0d7de"/>
+    <circle cx="612" cy="76" r="22" fill="#1f883d"/>
+    <text x="612" y="84" text-anchor="middle" font-size="24" fill="#ffffff" font-weight="700">3</text>
+    <rect x="528" y="112" width="168" height="40" rx="6" fill="#ffffff" stroke="#d0d7de"/>
+    <text x="612" y="138" text-anchor="middle" font-size="14" fill="#1f2328" font-weight="600">Install AdBlock.bat</text>
+    <text x="612" y="186" text-anchor="middle" font-size="15" fill="#57606a">Double-click it and</text>
+    <text x="612" y="206" text-anchor="middle" font-size="15" fill="#57606a">click Yes when</text>
+    <text x="612" y="226" text-anchor="middle" font-size="15" fill="#1f2328" font-weight="600">Windows asks</text>
+  </g>
+
+  <path d="M720 150 L746 150" stroke="#8c959f" stroke-width="3" marker-end="url(#a)"/>
+
+  <!-- Step 4 -->
+  <g>
+    <rect x="756" y="28" width="180" height="244" rx="10" fill="#ffffff" stroke="#d0d7de"/>
+    <circle cx="846" cy="76" r="22" fill="#1f883d"/>
+    <text x="846" y="84" text-anchor="middle" font-size="24" fill="#ffffff" font-weight="700">4</text>
+    <path d="M826 116 a20 20 0 1 1 20 30" fill="none" stroke="#1f883d" stroke-width="5" stroke-linecap="round"/>
+    <path d="M836 146 L846 146 L846 136" fill="none" stroke="#1f883d" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="846" y="192" text-anchor="middle" font-size="15" fill="#57606a">Restart the Statlocker</text>
+    <text x="846" y="212" text-anchor="middle" font-size="15" fill="#57606a">app. Done -</text>
+    <text x="846" y="232" text-anchor="middle" font-size="15" fill="#1f2328" font-weight="700">ads gone.</text>
+  </g>
+
+  <defs>
+    <marker id="a" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L8,4.5 L0,9 z" fill="#8c959f"/>
+    </marker>
+  </defs>
+</svg>

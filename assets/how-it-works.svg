@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 360" font-family="Segoe UI, system-ui, sans-serif">
+  <rect width="960" height="360" rx="12" fill="#f6f8fa" stroke="#d0d7de"/>
+  <text x="480" y="40" text-anchor="middle" font-size="19" fill="#1f2328" font-weight="700">How it works (no magic, one tiny detail)</text>
+
+  <!-- app box -->
+  <rect x="30" y="110" width="210" height="80" rx="10" fill="#ffffff" stroke="#d0d7de"/>
+  <text x="135" y="145" text-anchor="middle" font-size="16" fill="#1f2328" font-weight="600">Statlocker app</text>
+  <text x="135" y="168" text-anchor="middle" font-size="13" fill="#57606a">wants to load an ad</text>
+
+  <path d="M240 150 L298 150" stroke="#8c959f" stroke-width="3" marker-end="url(#b)"/>
+
+  <!-- lookup box -->
+  <rect x="300" y="110" width="220" height="80" rx="10" fill="#ffffff" stroke="#d0d7de"/>
+  <text x="410" y="145" text-anchor="middle" font-size="16" fill="#1f2328" font-weight="600">Your PC looks up</text>
+  <text x="410" y="168" text-anchor="middle" font-size="13" fill="#57606a">the website address (hosts file)</text>
+
+  <!-- branches -->
+  <path d="M520 138 L600 92" stroke="#8c959f" stroke-width="3" marker-end="url(#b)"/>
+  <path d="M520 162 L600 208" stroke="#8c959f" stroke-width="3" marker-end="url(#b)"/>
+
+  <!-- ad branch -->
+  <rect x="600" y="52" width="330" height="80" rx="10" fill="#fff1f0" stroke="#ff818266"/>
+  <text x="765" y="84" text-anchor="middle" font-size="15" fill="#1f2328" font-weight="600">Ad network? - 127.0.0.1</text>
+  <text x="765" y="108" text-anchor="middle" font-size="13" fill="#57606a">"127.0.0.1" means "this PC" - nothing is listening.</text>
+  <text x="765" y="126" text-anchor="middle" font-size="14" fill="#cf222e" font-weight="600">Ad request dies quietly. No ad, no tracking.</text>
+
+  <!-- app branch -->
+  <rect x="600" y="168" width="330" height="80" rx="10" fill="#dafbe1" stroke="#4ac26b66"/>
+  <text x="765" y="200" text-anchor="middle" font-size="15" fill="#1f2328" font-weight="600">Statlocker / Steam / data? - real address</text>
+  <text x="765" y="224" text-anchor="middle" font-size="13" fill="#57606a">Everything the app actually needs keeps working:</text>
+  <text x="765" y="242" text-anchor="middle" font-size="14" fill="#1a7f37" font-weight="600">stats, match upload, sign-in, highlights.</text>
+
+  <text x="480" y="316" text-anchor="middle" font-size="14" fill="#57606a">The app is never modified. Only ad-website lookups are pointed at a dead address.
+  Double-click Remove AdBlock.bat and it goes back to exactly how it was.</text>
+
+  <defs>
+    <marker id="b" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L8,4.5 L0,9 z" fill="#8c959f"/>
+    </marker>
+  </defs>
+</svg>

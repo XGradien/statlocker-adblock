@@ -1,0 +1,71 @@
+name: domain-watcher
+
+# Watches Statlocker's public ad-surface pages (and the Playwire/RAMP config
+# they load) for new ad-network domains. When the app's ad stack changes,
+# this opens a pull request with the new domains appended to domains.txt.
+#
+# The install script fetches domains.txt from this repo at install time, so
+# merging these PRs updates every user on their next install run.
+
+on:
+  schedule:
+    - cron: '0 */12 * * *'
+  workflow_dispatch: {}
+
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - id: watch
+        run: |
+          set +e
+          python tools/refresh_domains.py > new-domains.txt 2> watch.log
+          rc=$?
+          cat watch.log || true
+          if [ $rc -eq 0 ]; then
+            echo "status=clean" >> "$GITHUB_OUTPUT"
+          elif [ $rc -eq 1 ]; then
+            echo "status=new" >> "$GITHUB_OUTPUT"
+            python - <<'EOF'
+            import os, pathlib
+            body = pathlib.Path("new-domains.txt").read_text().strip()
+            with open(os.environ["GITHUB_ENV"], "a") as f:
+                f.write("NEW_DOMAINS<<WATCHER_EOF\n" + body + "\nWATCHER_EOF\n")
+            EOF
+          else
+            echo "status=error" >> "$GITHUB_OUTPUT"
+            echo "watcher failed with exit $rc - see watch.log"
+            exit 1
+          fi
+
+      - if: steps.watch.outputs.status == 'new'
+        run: |
+          python tools/apply_new_domains.py new-domains.txt
+          git diff --exit-code domains.txt || true
+
+      - if: steps.watch.outputs.status == 'new'
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "watcher: append newly detected ad domains"
+          title: "Watcher: new ad domain(s) detected in Statlocker's ad surface"
+          body: |
+            The domain watcher (runs every 12 hours) detected domains referenced
+            by Statlocker's public ad-surface pages that are not in the blocklist
+            and not whitelisted:
+
+            ```
+            ${{ env.NEW_DOMAINS }}
+            ```
+
+            Merging this PR updates `domains.txt`. Users pick the update up
+            automatically the next time they run **Install AdBlock.bat**
+            (it fetches the live list from this repo).
+          branch: watcher/new-domains
+          labels: watcher
