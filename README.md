@@ -10,12 +10,12 @@ You play Deadlock. You love checking your stats. You do not want the companion a
 
 ## Install (30 seconds, no technical knowledge needed)
 
-There is no program to install and no "download" button on the app — you download the **folder** from this page:
+There is no program to install and no "download" button on the app — you download the **folder** from the [Releases page](https://github.com/XGradien/statlocker-adblock/releases/latest):
 
-<img src="assets/install-steps.svg" alt="Install in 4 steps: Code button, unzip, double-click Install AdBlock.bat, restart app" width="860"/>
+<img src="assets/install-steps.svg" alt="Install in 4 steps: download the zip from Releases, unzip, double-click Install AdBlock.bat, restart app" width="860"/>
 
-1. **Get the files.** On this page, click the green **Code** button (top right) → **Download ZIP**.
-2. **Unzip.** Right-click the downloaded `statlocker-adblock-main.zip` → **Extract All** → pick a folder (Desktop is fine).
+1. **Get the files.** Open the [Releases page](https://github.com/XGradien/statlocker-adblock/releases/latest) and download the attached **`statlocker-adblock-v1.0.0.zip`** file (that link always jumps to the latest release).
+2. **Unzip.** Right-click the downloaded zip → **Extract All** → pick a folder (Desktop is fine).
 3. **Install.** Open that folder and double-click **`Install AdBlock.bat`**. A Windows window pops up asking for permission — **click Yes**. You'll see "Done!".
 4. **Restart the app.** Quit Statlocker completely (right-click its tray icon → Quit), then start it again.
 
