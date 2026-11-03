@@ -13,7 +13,7 @@ if errorlevel 1 (
     echo [1/2] Asking Windows for permission (a window will pop up -
     echo       click "Yes". If you click "No", nothing happens.)
     echo.
-    powershell -NoProfile -Command "try { Start-Process -FilePath '%~f0' -Verb RunAll } catch { exit 1 }"
+    powershell -NoProfile -Command "try { Start-Process -FilePath '%~f0' -Verb RunAs } catch { Write-Host ('  ' + $_.Exception.Message); exit 1 }"
     if errorlevel 1 (
         echo.
         echo Windows permission was not granted, so nothing was changed.
