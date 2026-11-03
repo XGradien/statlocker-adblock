@@ -37,8 +37,9 @@ if errorlevel 1 (
     exit /b 1
 )
 echo.
-echo Starting the admin window... you can close this one.
-timeout /t 2 >nul
+echo A second window will now do the work. You can close this
+echo window whenever you like.
+pause
 exit /b
 
 :admin_ok
