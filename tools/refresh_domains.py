@@ -86,6 +86,7 @@ def main():
 
     found = set()
     to_fetch = list(SLOT_URLS)
+    enqueued = set(to_fetch)  # dedupe: both slot pages reconstruct the same ramp.js URL
     extra_fetches = 0
 
     while to_fetch:
@@ -107,15 +108,26 @@ def main():
         pub_m = re.search(r"PUB_ID\s*=\s*'(\d+)'", text)
         web_m = re.search(r"WEBSITE_ID\s*=\s*'(\d+)'", text)
         if host_m and pub_m and web_m and "ramp.js" in text:
-            to_fetch.append(
+            ramp_url = (
                 f"https://{host_m.group(1)}/{pub_m.group(1)}/{web_m.group(1)}/ramp.js"
             )
+            if ramp_url not in enqueued:
+                to_fetch.append(ramp_url)
+                enqueued.add(ramp_url)
         # future-proofing: also follow any fully-spelled .js URLs
         candidates = set(re.findall(r'src="([^"]+\.js[^"]*)"', text, re.I))
         candidates.update(re.findall(r"https?://[a-z0-9.\-]+/[^\s'\"<>)]*?\.js", text, re.I))
         for s in sorted(candidates):
+            # Skip unexpanded JS template URLs (e.g. /stack/${s}/ramptag.js):
+            # they 403/404 when fetched literally, and their hosts are already
+            # captured from the page text by HOST_RE.
+            if "${" in s:
+                continue
+            if s in enqueued:
+                continue
             if s.startswith("http") and extra_fetches < MAX_EXTRA_FETCHES:
                 to_fetch.append(s)
+                enqueued.add(s)
                 extra_fetches += 1
 
     unknown = sorted(

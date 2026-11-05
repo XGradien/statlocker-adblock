@@ -32,12 +32,12 @@ jobs:
             echo "status=clean" >> "$GITHUB_OUTPUT"
           elif [ $rc -eq 1 ]; then
             echo "status=new" >> "$GITHUB_OUTPUT"
-            python - <<'EOF'
-            import os, pathlib
-            body = pathlib.Path("new-domains.txt").read_text().strip()
-            with open(os.environ["GITHUB_ENV"], "a") as f:
-                f.write("NEW_DOMAINS<<WATCHER_EOF\n" + body + "\nWATCHER_EOF\n")
-            EOF
+            # Write to GITHUB_ENV in plain bash: a `python - <<EOF` here-doc
+            # breaks here because YAML dedents the block, so the EOF
+            # terminator is indented and bash never finds it (syntax error,
+            # exit 2).
+            NEW_DOMAINS="$(cat new-domains.txt)"
+            printf 'NEW_DOMAINS<<WATCHER_EOF\n%s\nWATCHER_EOF\n' "$NEW_DOMAINS" >> "$GITHUB_ENV"
           else
             echo "status=error" >> "$GITHUB_OUTPUT"
             echo "watcher failed with exit $rc - see watch.log"
