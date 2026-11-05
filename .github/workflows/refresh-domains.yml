@@ -12,6 +12,11 @@ on:
     - cron: '0 */12 * * *'
   workflow_dispatch: {}
 
+# GITHUB_TOKEN is read-only by default on public repos; the PR step needs write.
+permissions:
+  contents: write
+  pull-requests: write
+
 jobs:
   watch:
     runs-on: ubuntu-latest
@@ -76,4 +81,3 @@ jobs:
             automatically the next time they run **Install AdBlock.bat**
             (it fetches the live list from this repo).
           branch: watcher/new-domains
-          labels: watcher
