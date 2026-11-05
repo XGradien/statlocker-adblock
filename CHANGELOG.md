@@ -1,5 +1,17 @@
 # Changelog
 
+## Unreleased
+
+- Blocklist extended 92 → 119 domains: the domain watcher's first PR added
+  27 verified ad-tech domains (3Lift, 33Across, Rubicon Project, smaato,
+  TrustedStack, SmileWanted, GumGum, Connatix, RichAudience, Criteo/PostRelease,
+  OmniTag, uidapi, EUID, Microsoft SAS CDN and others).
+- Watcher fixes: here-doc terminator syntax error that failed every run,
+  apply-step exit-code handling (appended = success), skipping unexpanded
+  JS template URLs, fetch dedupe, GITHUB_TOKEN write permissions, the
+  repo's "Allow GitHub Actions to create and approve pull requests" setting,
+  and a whitelist for docs/telemetry domains found in ad-config content.
+
 ## 1.0.0 (2026-11-03)
 
 - First public release.
