@@ -125,3 +125,32 @@ ajs-assets.ftstatic.com
 # --- JW Player ad tech only (the JW Player video platform itself stays
 #     reachable so highlight playback works; only its ad-tech subdomain goes) ---
 prd.jwpltx.com
+
+# --- added by domain watcher on 2026-11-05 ---
+apps.sascdn.com
+assets.msn.com
+blobs.omnitagjs.com
+capi.connatix.com
+cdn.edkt.io
+cdn3.richaudience.com
+cds.connatix.com
+ced-ns.sascdn.com
+csync.smilewanted.com
+eb2.3lift.com
+exchange.postrelease.com
+g2.gumgum.com
+id.hadron.ad.gt
+lexicon.33across.com
+pre.ads.justpremium.com
+prebid-server.rubiconproject.com
+prebid.ad.smaato.net
+prebid.smilewanted.com
+prebid.trustedstack.com
+prod.euid.eu
+prod.uidapi.com
+shb.richaudience.com
+sync.richaudience.com
+t4.richmediastudio.com
+tlx.3lift.com
+video-outstream.rubiconproject.com
+visitor.omnitagjs.com
