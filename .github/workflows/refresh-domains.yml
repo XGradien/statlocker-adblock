@@ -46,8 +46,16 @@ jobs:
 
       - if: steps.watch.outputs.status == 'new'
         run: |
-          python tools/apply_new_domains.py new-domains.txt
-          git diff --exit-code domains.txt || true
+          rc=0
+          python tools/apply_new_domains.py new-domains.txt || rc=$?
+          # apply exit codes: 0 = nothing to add, 1 = domains appended (success),
+          # 2 = real error. This step runs under bash -e, so the "appended"
+          # exit 1 must be tolerated or every successful detection fails the run.
+          if [ "$rc" -ne 0 ] && [ "$rc" -ne 1 ]; then
+            echo "apply_new_domains.py failed with exit code $rc"
+            exit "$rc"
+          fi
+          git diff -- domains.txt || true
 
       - if: steps.watch.outputs.status == 'new'
         uses: peter-evans/create-pull-request@v7

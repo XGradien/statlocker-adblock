@@ -42,7 +42,7 @@ WHITELIST_APEXES = [
     "steamlogin.com", "steampowered.com", "steamgriddb.com",
     "googleapis.com", "gstatic.com", "google.com", "googletagmanager.com",
     "youtube.com", "ytimg.com",
-    "jsdelivr.net", "unpkg.com", "cloudflare.com", "withgoogle.com",
+    "jsdelivr.net", "jsdelivr.com", "unpkg.com", "cloudflare.com", "withgoogle.com",
     # JW Player: the app may use it to PLAY highlight videos; only its
     # ad-tech subdomain (prd.jwpltx.com) is blocked, not the player.
     "jwplayer.com", "jwplatform.com", "jwpcdn.com",
@@ -55,6 +55,18 @@ WHITELIST_APEXES = [
     "react.dev", "github.com", "githubusercontent.com", "github.io",
     "pinterest.com", "tumblr.com", "twitter.com", "x.com", "linkedin.com",
     "facebook.com", "reddit.com", "microsoft.com", "apple.com", "mozilla.org",
+    # --- non-ad domains observed in ad-page/JS content: docs, example links
+    #     from old library comments, telemetry, management endpoints.
+    #     Strings in config files, not live ad traffic.
+    "apache.org", "whatwg.org",
+    "jquery.com", "videojs.com", "prebid.org",
+    "js.org",                    # dev project docs (redux.js.org, etc.)
+    "datadoghq.com", "datadoghq.eu",  # telemetry - never block
+    "padolsey.com", "marphezis.com", "aptana.com", "cssplay.co.uk",
+    "patternify.com", "pelagodesign.com", "ozpr.net",
+    "qsearch-a.akamaihd.net",    # legacy Bing string; akamaihd.net too broad
+    "appnexus.com",              # runtime is adnxs.com (blocked); console/stash
+                                 # subdomains are management endpoints
     # GCP/CDN apexes we only block at specific subdomain level
     "cloudfront.net", "run.app", "a2z.com", "yahoo.com", "amazon.dev",
     "amazon.com", "amazonaws.com", "googleusercontent.com",
