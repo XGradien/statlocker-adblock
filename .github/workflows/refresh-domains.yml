@@ -61,6 +61,8 @@ jobs:
             exit "$rc"
           fi
           git diff -- domains.txt || true
+          # Drop temp artifacts so create-pull-request doesn't commit them.
+          rm -f new-domains.txt watch.log
 
       - if: steps.watch.outputs.status == 'new'
         uses: peter-evans/create-pull-request@v7
