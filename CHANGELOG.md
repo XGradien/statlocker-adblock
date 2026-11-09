@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.1.2 (2026-11-09)
+
+- `install` and `remove` flush the Windows DNS cache. Windows caches name
+  lookups, so an ad address the app resolved earlier could keep working until
+  its cache entry expired, which looks exactly like the tool failing. The
+  change is now active as soon as the app restarts.
+
 ## 1.1.1 (2026-11-09)
 
 - `Remove AdBlock.bat` deletes the backup it made, so a clean uninstall leaves
