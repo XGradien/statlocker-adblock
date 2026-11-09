@@ -14,7 +14,8 @@ app legitimately uses, plus non-ad code artifacts).
 Usage:
     python refresh_domains.py            # new domains printed to stdout, one
                                          # per line; exit 0 = nothing new,
-                                         # exit 1 = new domains found
+                                         # exit 1 = new domains found,
+                                         # exit 2 = a primary source failed
     python refresh_domains.py --verbose  # also dump all observed hosts to stderr
 
 Designed to run unattended in GitHub Actions (no dependencies beyond the
@@ -29,6 +30,14 @@ SLOT_URLS = [
     "https://dtapp.statlocker.gg/?slot=sky",
     "https://dtapp.statlocker.gg/?slot=med_rect",
 ]
+
+# URLs that are permanently gone. Fetching them again only adds a 404 to every
+# run and trains everyone to ignore the log.
+SKIP_URLS = {
+    # Playwire's pre-content bootstrap. 404 on every run since at least
+    # 2026-11-09; the bidder list it used to carry now arrives via ramp.js.
+    "https://config.playwire.com/1025810/v2/pre_content.js",
+}
 
 # Domains that must NEVER be blocked: the app, its data, Steam/Valve sign-in,
 # video playback, generic CDNs, and code-artifact strings that are not live
@@ -94,19 +103,27 @@ def under(h, apex):
 def main():
     verbose = "--verbose" in sys.argv
     with open("domains.txt", encoding="utf-8") as f:
-        blocked = {l.strip() for l in f if l.strip() and not l.strip().startswith("#")}
+        blocked = {l.strip().lower() for l in f if l.strip() and not l.strip().startswith("#")}
 
     found = set()
-    to_fetch = list(SLOT_URLS)
+    to_fetch = [u for u in SLOT_URLS if u not in SKIP_URLS]
     enqueued = set(to_fetch)  # dedupe: both slot pages reconstruct the same ramp.js URL
+    # Sources we cannot do without. If one of these fails, the watcher saw
+    # nothing and must say so loudly instead of reporting a clean run.
+    primary = set(to_fetch)
     extra_fetches = 0
+    failed_fetches = 0
 
     while to_fetch:
         url = to_fetch.pop(0)
         try:
             data = fetch(url)
         except Exception as e:
+            if url in primary:
+                print(f"ERROR: primary source unreachable: {url}: {e}", file=sys.stderr)
+                return 2
             print(f"WARN: failed to fetch {url}: {e}", file=sys.stderr)
+            failed_fetches += 1
             continue
         text = data.decode("utf-8", "ignore")
         for m in HOST_RE.finditer(text):
@@ -123,9 +140,10 @@ def main():
             ramp_url = (
                 f"https://{host_m.group(1)}/{pub_m.group(1)}/{web_m.group(1)}/ramp.js"
             )
-            if ramp_url not in enqueued:
+            if ramp_url not in enqueued and ramp_url not in SKIP_URLS:
                 to_fetch.append(ramp_url)
                 enqueued.add(ramp_url)
+                primary.add(ramp_url)
         # future-proofing: also follow any fully-spelled .js URLs
         candidates = set(re.findall(r'src="([^"]+\.js[^"]*)"', text, re.I))
         candidates.update(re.findall(r"https?://[a-z0-9.\-]+/[^\s'\"<>)]*?\.js", text, re.I))
@@ -135,7 +153,7 @@ def main():
             # captured from the page text by HOST_RE.
             if "${" in s:
                 continue
-            if s in enqueued:
+            if s in enqueued or s in SKIP_URLS:
                 continue
             if s.startswith("http") and extra_fetches < MAX_EXTRA_FETCHES:
                 to_fetch.append(s)
@@ -158,6 +176,9 @@ def main():
             f"{sum(1 for h in found if any(under(h, b) for b in blocked))}",
             file=sys.stderr,
         )
+
+    if failed_fetches:
+        print(f"# fetch failures: {failed_fetches}", file=sys.stderr)
 
     if unknown:
         print("\n".join(unknown))

@@ -1,2 +1,8 @@
 __pycache__/
 *.pyc
+
+# Watcher run artifacts. These used to be written into the checkout and ended
+# up committed by the PR step; the workflow now keeps them in $RUNNER_TEMP.
+watch.log
+new-domains.txt
+

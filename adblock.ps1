@@ -4,7 +4,8 @@ statlocker-adblock engine.
 
   install : writes (or refreshes) the ad-block section in the Windows hosts file
   remove  : removes the section, leaving everything else in hosts untouched
-  status  : reports whether the block is active
+  status  : reports whether the block is active, and probes DNS to confirm a
+            blocked domain really resolves to 127.0.0.1
 
 The block lives in a clearly marked section inside the hosts file, so it is
 trivially reversible and never mixes with the user's own entries. Every
@@ -12,8 +13,13 @@ install backs up the hosts file first (hosts.bak-statlocker-adblock).
 The script is idempotent: running install any number of times produces the
 same end state.
 
-Hidden test override: -HostsPath points at a different hosts file. Admin is
-only required when touching the real system hosts file.
+When online, install takes the live list from GitHub, but only after its
+SHA-256 (domains.txt.sha256) checks out - a list that cannot be verified is
+never written to the hosts file.
+
+Hidden test overrides: -HostsPath and -DomainsFile point at different files,
+-LiveDomainsUrl / -LiveHashUrl at different URLs, -ProbeDomain at a specific
+host to resolve. Admin is only required when touching the real hosts file.
 #>
 param(
     [Parameter(Mandatory = $true, Position = 0)]
@@ -28,7 +34,11 @@ param(
 
     # Best-effort live list; disable with -NoLiveUpdate (also used by tests)
     [switch]$NoLiveUpdate,
-    [string]$LiveDomainsUrl = 'https://raw.githubusercontent.com/XGradien/statlocker-adblock/main/domains.txt'
+    [string]$LiveDomainsUrl = 'https://raw.githubusercontent.com/XGradien/statlocker-adblock/main/domains.txt',
+    [string]$LiveHashUrl = '',
+
+    # status: resolve one specific host instead of the first blocked domain
+    [string]$ProbeDomain = ''
 )
 
 $ErrorActionPreference = 'Stop'
@@ -90,6 +100,32 @@ function Assert-Admin {
     }
 }
 
+# Resolves one host the way the OS would (hosts file included) and reports
+# whether it lands on this PC. GetHostAddresses consults the hosts file, unlike
+# Resolve-DnsName, which asks the DNS server directly and would miss the block.
+function Get-BlockProbeResult {
+    param([string[]]$BlockedDomains)
+
+    $target = (@($BlockedDomains) | Where-Object { $_ } | Select-Object -First 1)
+    if (-not $target) {
+        return @{ Probed = $false; Ok = $false; Detail = 'no blocked domain to probe' }
+    }
+    try {
+        $addresses = @([Net.Dns]::GetHostAddresses($target) | ForEach-Object { $_.IPAddressToString })
+    } catch {
+        return @{
+            Probed = $true
+            Ok     = $false
+            Detail = "could not resolve $target ($($_.Exception.Message))"
+        }
+    }
+    return @{
+        Probed = $true
+        Ok     = ($addresses -contains '127.0.0.1')
+        Detail = "$target -> " + ($addresses -join ', ')
+    }
+}
+
 switch ($Action) {
 
     'status' {
@@ -97,12 +133,26 @@ switch ($Action) {
         $hosts = [System.IO.File]::ReadAllText($HostsPath)
         $sec = Get-Section $hosts
         if ($sec) {
-            $n = @($sec -split "`n" | Where-Object { $_ -match '^\s*127\.0\.0\.1\s' }).Count
+            $blocked = @($sec -split "`r?`n" | ForEach-Object {
+                $m = [regex]::Match($_, '^\s*127\.0\.0\.1\s+(\S+)')
+                if ($m.Success) { $m.Groups[1].Value }
+            })
             $lastWrite = (Get-Item $HostsPath).LastWriteTime
             Write-Host "Ad block: ACTIVE"
-            Write-Host ("  Domains blocked:  " + $n)
+            Write-Host ("  Domains blocked:  " + $blocked.Count)
             Write-Host ("  Hosts file last updated: " + $lastWrite.ToString('yyyy-MM-dd HH:mm'))
             Write-Host ("  Backup file:  " + $HostsPath + '.bak-statlocker-adblock (from the last install)')
+
+            $probe = Get-BlockProbeResult -BlockedDomains (@($ProbeDomain) + $blocked)
+            Write-Host ("  DNS probe:  " + $probe.Detail)
+            if ($probe.Ok) {
+                Write-Host "  The block is working: that domain resolves to this PC."
+            } elseif ($ProbeDomain) {
+                Write-Host "  That domain is not being blocked."
+            } elseif ($probe.Probed) {
+                Write-Host "  WARNING: a domain in your block list does not resolve to 127.0.0.1."
+                Write-Host "  Another app (VPN, antivirus, hosts manager) may have rewritten the hosts file."
+            }
             exit 0
         } else {
             Write-Host "Ad block: NOT active (no statlocker-adblock section found in the hosts file)."
@@ -117,22 +167,44 @@ switch ($Action) {
         $domains = Read-Domains $DomainsFile
         $source = "the list bundled with this folder ($($domains.Count) domains)"
         if (-not $NoLiveUpdate) {
+            $tmp = Join-Path $env:TEMP 'statlocker-adblock-live-domains.txt'
+            $tmpHash = "$tmp.sha256"
+            $hashUrl = if ($LiveHashUrl) { $LiveHashUrl } else { "$LiveDomainsUrl.sha256" }
+            Remove-Item $tmp -Force -ErrorAction SilentlyContinue
+            Remove-Item $tmpHash -Force -ErrorAction SilentlyContinue
+
+            # Fetch the list. Failing here only means offline.
             try {
                 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-                $tmp = Join-Path $env:TEMP 'statlocker-adblock-live-domains.txt'
                 Invoke-WebRequest -Uri $LiveDomainsUrl -OutFile $tmp -TimeoutSec 25 -UseBasicParsing
-                $live = Read-Domains $tmp
-                if ($live.Count -ge 10 -and $live.Count -ge $domains.Count) {
-                    $domains = $live
-                    $source = "the latest list from GitHub ($($live.Count) domains)"
-                } else {
-                    Write-Host "The live list from GitHub looks stale or incomplete - using the bundled list."
-                }
-                Remove-Item $tmp -Force -ErrorAction SilentlyContinue
             } catch {
                 Write-Host "Could not reach GitHub to check for list updates - using the bundled list."
-                Write-Host ("(If you are offline this is normal. Re-run 'Install AdBlock.bat' later to pick up updates.)")
+                Write-Host "(If you are offline this is normal. Re-run 'Install AdBlock.bat' later to pick up updates.)"
             }
+
+            # Verify it before trusting it: an unverifiable list is not installed.
+            if (Test-Path $tmp) {
+                try {
+                    $live = Read-Domains $tmp
+                    if ($live.Count -lt 10 -or $live.Count -lt $domains.Count) {
+                        Write-Host "The live list from GitHub looks stale or incomplete - using the bundled list."
+                    } else {
+                        Invoke-WebRequest -Uri $hashUrl -OutFile $tmpHash -TimeoutSec 25 -UseBasicParsing
+                        $expected = (((Get-Content $tmpHash -Raw) -split '\s+')[0]).ToLower()
+                        $actual = (Get-FileHash -Path $tmp -Algorithm SHA256).Hash.ToLower()
+                        if ($expected -ne $actual) {
+                            throw "checksum mismatch (expected $expected, got $actual)"
+                        }
+                        $domains = $live
+                        $source = "the latest list from GitHub ($($live.Count) domains, checksum verified)"
+                    }
+                } catch {
+                    Write-Host "The live list from GitHub could not be verified - using the bundled list."
+                    Write-Host ("  (" + $_.Exception.Message + ")")
+                }
+            }
+            Remove-Item $tmp -Force -ErrorAction SilentlyContinue
+            Remove-Item $tmpHash -Force -ErrorAction SilentlyContinue
         }
 
         # --- Write it ---
