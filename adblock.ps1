@@ -254,6 +254,13 @@ switch ($Action) {
         $hosts = [System.IO.File]::ReadAllText($HostsPath)
         if (-not (Get-Section $hosts)) {
             Write-Host "Nothing to remove - the statlocker-adblock section was not found."
+            # Someone may have uninstalled with an older version, which left the
+            # backup file behind. Clean it up so a clean install really is clean.
+            $stale = $HostsPath + '.bak-statlocker-adblock'
+            if (Test-Path $stale) {
+                Remove-Item $stale -Force
+                Write-Host "Deleted the backup file an older version left behind."
+            }
             exit 0
         }
         [System.IO.File]::WriteAllText($HostsPath, (Remove-Section $hosts))

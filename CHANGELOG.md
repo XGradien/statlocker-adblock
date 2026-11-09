@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.1.3 (2026-11-09)
+
+- `Remove AdBlock.bat` now clears a backup file left behind by an older
+  version, even when the block itself is already gone. Before, someone who
+  uninstalled with v1.0.0 or v1.1.0 had `hosts.bak-statlocker-adblock` sitting
+  in their Windows folder with no way to clear it from the tool.
+
 ## 1.1.2 (2026-11-09)
 
 - `install` and `remove` flush the Windows DNS cache. Windows caches name

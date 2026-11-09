@@ -174,6 +174,14 @@ Assert-True ($r.Output -match '127\.0\.0\.1') 'probe reports localhost resolving
 $r = Invoke-Engine -Arguments @('status', '-HostsPath', $HostsFile, '-ProbeDomain', 'no-such-host.invalid')
 Assert-True ($r.Output -match 'DNS probe') 'probe reports an unresolvable host without crashing'
 
+Write-Host "`n[11] a backup left behind by an older version is cleaned up too"
+Reset-HostsFile
+$staleBackup = "$HostsFile.bak-statlocker-adblock"
+Set-Content -Path $staleBackup -Value 'hosts file as it was before an older install' -Encoding ascii
+$r = Invoke-Engine -Arguments @('remove', '-HostsPath', $HostsFile)
+Assert-Equal 0 $r.Code 'remove with nothing installed still exits 0'
+Assert-True (-not (Test-Path $staleBackup)) 'the stale backup from the older version is deleted'
+
 # --- summary ---------------------------------------------------------------
 
 Remove-Item -Path $Tmp -Recurse -Force -ErrorAction SilentlyContinue
