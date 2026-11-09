@@ -141,7 +141,12 @@ switch ($Action) {
             Write-Host "Ad block: ACTIVE"
             Write-Host ("  Domains blocked:  " + $blocked.Count)
             Write-Host ("  Hosts file last updated: " + $lastWrite.ToString('yyyy-MM-dd HH:mm'))
-            Write-Host ("  Backup file:  " + $HostsPath + '.bak-statlocker-adblock (from the last install)')
+            $backupPath = $HostsPath + '.bak-statlocker-adblock'
+            if (Test-Path $backupPath) {
+                Write-Host ("  Backup file:  " + $backupPath)
+            } else {
+                Write-Host "  Backup file:  none (it is deleted when you remove the block)"
+            }
 
             $probe = Get-BlockProbeResult -BlockedDomains (@($ProbeDomain) + $blocked)
             Write-Host ("  DNS probe:  " + $probe.Detail)
@@ -151,7 +156,7 @@ switch ($Action) {
                 Write-Host "  That domain is not being blocked."
             } elseif ($probe.Probed) {
                 Write-Host "  WARNING: a domain in your block list does not resolve to 127.0.0.1."
-                Write-Host "  Another app (VPN, antivirus, hosts manager) may have rewritten the hosts file."
+                Write-Host "  The hosts file may have been overwritten by another app, or DNS may be unavailable."
             }
             exit 0
         } else {
