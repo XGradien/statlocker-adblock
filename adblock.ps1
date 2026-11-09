@@ -227,6 +227,17 @@ switch ($Action) {
             throw "Verification failed - the section was not found after writing. Your hosts file was restored from the backup."
         }
 
+        # --- Flush the DNS cache so the block takes effect immediately ---
+        # Windows caches name lookups. A cached ad address would keep resolving
+        # to the real server until its TTL ran out, which looks exactly like the
+        # tool not working. Restarting the app alone does not clear it.
+        try {
+            & ipconfig /flushdns | Out-Null
+            Write-Host "  DNS cache flushed - the change is active now."
+        } catch {
+            Write-Host "  Could not flush the DNS cache - restarting the app is still enough."
+        }
+
         Write-Host ("Installed: " + $domains.Count + " ad domains are now blocked on this PC.")
         Write-Host ("  Source:  " + $source)
         Write-Host ("  Backup:  " + $HostsPath + '.bak-statlocker-adblock')
@@ -253,6 +264,9 @@ switch ($Action) {
         # a clean removal is exactly the leftover this tool promises not to create.
         $backup = $HostsPath + '.bak-statlocker-adblock'
         if (Test-Path $backup) { Remove-Item $backup -Force }
+        # Flush the DNS cache too, so the old addresses come back promptly
+        # instead of lingering until each cached entry expires.
+        try { & ipconfig /flushdns | Out-Null } catch { }
         Write-Host "Removed: the ad block is off and your hosts file is back to how it was."
         Write-Host "The backup file was deleted too, so nothing is left behind."
         Write-Host "Restart the Statlocker app if you want the ads back (they will return)."
