@@ -5,8 +5,9 @@ echo ============================================================
 echo    Statlocker Ad Block  -  Remove
 echo ============================================================
 echo.
-echo This removes the ad block. Your hosts file goes back to exactly
-echo how it was before (everything else in it is left untouched).
+echo This removes the ad block. Your hosts file goes back to how it was
+echo before (everything else in it is left untouched), and the backup
+echo file the installer made is deleted too.
 echo.
 rem --- Admin check (token-based; "net session" is unreliable on Home/workgroup) ---
 powershell -NoProfile -Command "if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) { exit 1 }" >nul 2>&1
@@ -53,8 +54,11 @@ if "%RC%"=="0" (
     echo ============================================================
 ) else (
     echo ============================================================
-    echo   Something went wrong (error code %RC%). Try again, or
-    echo   open an issue on the project's GitHub page.
+    echo   Something went wrong (error code %RC%). Try again.
+    echo.
+    echo   If it keeps failing, your antivirus may be blocking changes
+    echo   to the hosts file - check its settings. If not, open an
+    echo   issue on the project's GitHub page.
     echo ============================================================
 )
 echo.

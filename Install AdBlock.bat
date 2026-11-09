@@ -6,7 +6,8 @@ echo    Statlocker Ad Block  -  for the Deadlock Companion App
 echo ============================================================
 echo.
 echo What this does:
-echo   * Saves a backup of your Windows hosts file (automatic)
+echo   * Saves a backup of your Windows hosts file (automatic, and
+echo     deleted again when you remove the block)
 echo   * Blocks the ad networks the Statlocker app talks to
 echo   * Does NOT touch the app, your stats, your game, or anything else
 echo   * Is 100%% reversible: double-click "Remove AdBlock.bat" anytime
@@ -58,9 +59,11 @@ if "%RC%"=="0" (
 ) else (
     echo ============================================================
     echo   Something went wrong (error code %RC%).
-    echo   If the app still shows ads, try double-clicking this
-    echo   file one more time. If it keeps failing, open an issue
-    echo   on the project's GitHub page.
+    echo   Try double-clicking this file one more time.
+    echo.
+    echo   If it keeps failing, your antivirus may be blocking changes
+    echo   to the hosts file - check its settings. If not, open an
+    echo   issue on the project's GitHub page.
     echo ============================================================
 )
 echo.

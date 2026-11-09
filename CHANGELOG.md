@@ -1,5 +1,21 @@
 # Changelog
 
+## 1.1.4 (2026-11-09)
+
+- `Check AdBlock Status.bat` reports whether the backup file actually exists
+  instead of always printing its path.
+- The DNS probe warning no longer assumes another app overwrote the hosts
+  file; a broken DNS connection produces the same symptom.
+- The `.bat` windows no longer promise the hosts file goes back "exactly" how
+  it was (it leaves a blank line or two), and both failure messages now
+  mention that antivirus software can block hosts-file edits.
+- `tools/build-release.py` builds the release zip into a gitignored `dist/`.
+  Builds are reproducible: entry timestamps come from the HEAD commit, so the
+  SHA-256 published with a release can be reproduced by anyone. Covered by
+  new tests.
+- Added `SECURITY.md`, describing what the tool touches, its supply chain, and
+  how to report a problem privately.
+
 ## 1.1.3 (2026-11-09)
 
 - `Remove AdBlock.bat` now clears a backup file left behind by an older

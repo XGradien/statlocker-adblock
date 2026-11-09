@@ -6,3 +6,6 @@ __pycache__/
 watch.log
 new-domains.txt
 
+# Local release builds (see tools/build-release.py)
+dist/
+

@@ -10,9 +10,11 @@
 | `domains.txt.sha256` | SHA-256 of the blocklist. The installer refuses a live list whose checksum does not match, so this must be updated in the same commit as `domains.txt`. `apply_new_domains.py` writes it for you. |
 | `tools/refresh_domains.py` | The watcher. Fetches Statlocker's public ad-surface pages and their Playwire/RAMP config, reports domains that are neither blocked nor whitelisted, and reports a structure change when it can no longer find the ad config. |
 | `tools/apply_new_domains.py` | Appends watcher output to `domains.txt` and refreshes the checksum sidecar (used by the PR step). |
+| `tools/build-release.py` | Builds the user-facing zip into `dist/` (gitignored). Reproducible: entry timestamps come from the HEAD commit, so the same commit always produces the same bytes. |
 | `.github/workflows/refresh-domains.yml` | Runs the watcher every 12h: a PR when the ad stack changes, an issue when the watcher cannot read it. |
 | `tests/test-engine.ps1` | Engine tests. Drives `adblock.ps1` against a throwaway hosts file: install, idempotency, checksum accept/reject, backup cleanup, remove, status, DNS probe, temp file cleanup. |
 | `tests/test_watcher.py` | Watcher tests. Skip list, primary-vs-secondary failure handling, structure-change detection, checksum sidecar, committed-list integrity. |
+| `tests/test_build_release.py` | Release-build tests. The zip ships only user-facing files, and two builds of the same commit are byte-identical. |
 
 ## Rules for touching `domains.txt`
 
@@ -72,6 +74,28 @@ repo look broken.
 
 The title is compared as a literal string in two `jq` filters. If you change
 the title, change it in both the error step and the clean step.
+
+## Building a release
+
+```
+python tools/build-release.py --version 1.1.3
+```
+
+Writes `dist/statlocker-adblock-v1.1.3.zip` and prints its size and SHA-256.
+`dist/` is gitignored, so builds are local products rather than commits.
+
+Only the files a user needs go into the zip: the three `.bat` entry points,
+the engine, the blocklist, the README, and the images it references. The
+development files (tests, tools, workflows) are not shipped. The `.bat` and
+`.ps1` files are written with CRLF endings regardless of platform, because
+cmd.exe parses them.
+
+Entry timestamps are pinned to the HEAD commit's time. Two builds from the
+same commit are byte-identical, which is what makes a release verifiable:
+the SHA-256 you publish is the SHA-256 anyone can reproduce.
+
+Upload the zip to the GitHub release for that tag. The README's install link
+points at `/releases/latest`, so publishing the release is what updates it.
 
 ## Running the tests
 

@@ -14,7 +14,7 @@ There is no program to install and no "download" button on the app — you downl
 
 <img src="assets/install-steps.svg" alt="Install in 4 steps: download the zip from Releases, unzip, double-click Install AdBlock.bat, restart app" width="860"/>
 
-1. **Get the files.** Open the [Releases page](https://github.com/XGradien/statlocker-adblock/releases/latest) and download the attached zip. Its name carries the version (`statlocker-adblock-v1.1.0.zip`); that link always jumps to the latest release, so the name will change as the tool updates.
+1. **Get the files.** Open the [Releases page](https://github.com/XGradien/statlocker-adblock/releases/latest) and download the attached zip. Its name carries the version (`statlocker-adblock-v1.1.3.zip`); that link always jumps to the latest release, so the name will change as the tool updates.
 2. **Unzip.** Right-click the downloaded zip → **Extract All** → pick a folder you'll remember (Desktop is fine). You'll need this folder again to remove the block.
 3. **Install.** Open that folder and double-click **`Install AdBlock.bat`**. A Windows window pops up asking for permission — **click Yes**. You'll see "Done!".
 4. **Restart the app.** Quit Statlocker completely (right-click its tray icon → Quit), then start it again.
@@ -111,7 +111,8 @@ Not affiliated with Statlocker or Valve Corporation. "Statlocker" and "Deadlock"
 | `adblock.ps1` | The engine behind the .bat files |
 | `domains.txt` | The blocklist (auto-maintained by the watcher) |
 | `domains.txt.sha256` | SHA-256 of the blocklist; the installer verifies it before use |
-| `tools/` | The domain watcher scripts (run in CI) |
-| `tests/` | Engine and watcher tests (run on every push and PR) |
+| `tools/` | The watcher scripts (run in CI) and `build-release.py`, which builds the release zip into the gitignored `dist/` folder |
+| `tests/` | Engine, watcher, and release-build tests (run on every push and PR) |
+| `SECURITY.md` | How to report a security problem |
 
 Released under the [MIT License](LICENSE).

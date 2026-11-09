@@ -11,7 +11,8 @@
 # This file is updated automatically by the domain watcher
 # (.github/workflows/refresh-domains.yml), which monitors Statlocker's
 # public ad-surface pages and opens a pull request when new ad
-# infrastructure appears. Verified 2026-10-31 against the app's live cache
+# infrastructure appears. The watcher re-checks coverage every 12 hours;
+# the app's live cache was last compared in full on 2026-10-31
 # (224 observed hosts, all covered).
 
 # --- Playwire / RAMP (the app's ad engine; served via Intergient) ---
