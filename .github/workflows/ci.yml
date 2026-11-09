@@ -1,0 +1,28 @@
+name: tests
+
+"on":
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  engine-and-watcher:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # The engine tests run adblock.ps1 against a throwaway hosts file through
+      # its -HostsPath seam, so they never touch the runner's real hosts file.
+      - name: Engine tests (PowerShell)
+        shell: powershell
+        run: '& "$env:GITHUB_WORKSPACE\tests\test-engine.ps1"'
+
+      - name: Watcher tests (Python)
+        shell: pwsh
+        run: |
+          $python = Get-Command python -ErrorAction SilentlyContinue
+          if (-not $python) { $python = Get-Command python3 }
+          & $python.Source -m unittest discover -s tests -v

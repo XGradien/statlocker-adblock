@@ -1,16 +1,37 @@
 # Changelog
 
-## Unreleased
+## 1.1.0 (2026-11-09)
 
 - Blocklist extended 92 → 119 domains: the domain watcher's first PR added
   27 verified ad-tech domains (3Lift, 33Across, Rubicon Project, smaato,
   TrustedStack, SmileWanted, GumGum, Connatix, RichAudience, Criteo/PostRelease,
   OmniTag, uidapi, EUID, Microsoft SAS CDN and others).
-- Watcher fixes: here-doc terminator syntax error that failed every run,
-  apply-step exit-code handling (appended = success), skipping unexpanded
-  JS template URLs, fetch dedupe, GITHUB_TOKEN write permissions, the
-  repo's "Allow GitHub Actions to create and approve pull requests" setting,
-  and a whitelist for docs/telemetry domains found in ad-config content.
+- `domains.txt` now ships with a SHA-256 sidecar, and the installer refuses a
+  live list whose checksum does not match. A truncated download or a tampered
+  list can no longer reach your hosts file. The checksum is computed over the
+  LF-normalised list, so it is the same on a Windows checkout and in CI.
+- The watcher validates every line before appending it to `domains.txt`, so a
+  malformed entry can no longer end up in the list and make every install fail.
+- `Check AdBlock Status.bat` now resolves a blocked domain and confirms it
+  lands on 127.0.0.1. A hosts file overwritten by a VPN or antivirus shows up
+  instead of looking healthy.
+- The watcher stopped fetching a Playwire URL that has 404'd since 2026-11-09,
+  and it now fails the run when a primary source (a slot page or ramp.js) is
+  unreachable instead of reporting a clean run it could not actually do.
+- Watcher run artifacts (`watch.log`, `new-domains.txt`) are written to the
+  runner temp directory and gitignored. One of them had been committed to the
+  repo by the PR step.
+- Tests: `tests/test-engine.ps1` (24 checks against a throwaway hosts file)
+  and `tests/test_watcher.py` (15 checks over the watcher), run on every push
+  and pull request.
+- `.gitattributes` pins CRLF for `.bat` and `.ps1`, so a fresh clone on Windows
+  checks out files cmd.exe can parse.
+- Watcher fixes from the first days of the project: a here-doc terminator
+  syntax error that failed every run, apply-step exit-code handling, skipping
+  unexpanded JS template URLs, fetch dedupe, GITHUB_TOKEN write permissions,
+  the repo's "Allow GitHub Actions to create and approve pull requests"
+  setting, and a whitelist for docs/telemetry domains found in ad-config
+  content.
 
 ## 1.0.0 (2026-11-03)
 
