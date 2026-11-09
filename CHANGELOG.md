@@ -1,5 +1,21 @@
 # Changelog
 
+## 1.1.1 (2026-11-09)
+
+- `Remove AdBlock.bat` deletes the backup it made, so a clean uninstall leaves
+  nothing behind at all. The installer already said the backup was temporary;
+  now it actually is.
+- `Install AdBlock.bat` always cleans up the downloaded list, even if
+  something goes wrong halfway through.
+- The watcher notices when Statlocker's ad pages change shape so it can no
+  longer find the ad config. That used to look exactly like a clean run. It now
+  opens an issue instead, and closes that issue by itself once it can read the
+  pages again.
+- README: keep-the-folder guidance, and an answer for "I deleted the folder,
+  how do I remove the block?"
+- Tests: 28 engine checks (backup cleanup, temp file cleanup) and 16 watcher
+  checks (structure-change detection).
+
 ## 1.1.0 (2026-11-09)
 
 - Blocklist extended 92 → 119 domains: the domain watcher's first PR added

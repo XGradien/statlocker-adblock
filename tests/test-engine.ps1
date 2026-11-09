@@ -104,6 +104,7 @@ $r = Invoke-Engine -Arguments @('install', '-HostsPath', $HostsFile, '-DomainsFi
 Assert-Equal 0 $r.Code 'install exits 0'
 Assert-True ((Get-FileBody) -match [regex]::Escape('# === statlocker-adblock')) 'section marker written'
 Assert-True ((Get-FileBody) -match '127\.0\.0\.1 a\.example\.com') 'first bundled domain blocked'
+Assert-True (Test-Path ($HostsFile + '.bak-statlocker-adblock')) 'install left a backup of the hosts file'
 
 Write-Host "`n[2] a second install is idempotent"
 $firstHash = (Get-FileHash -Path $HostsFile -Algorithm SHA256).Hash
@@ -126,6 +127,7 @@ $r = Invoke-Engine -Arguments @('remove', '-HostsPath', $HostsFile)
 Assert-Equal 0 $r.Code 'remove exits 0'
 Assert-True (-not ((Get-FileBody) -match 'statlocker-adblock')) 'section gone after remove'
 Assert-True ((Get-FileBody) -match 'myserver\.local') 'custom entry still present after remove'
+Assert-True (-not (Test-Path ($HostsFile + '.bak-statlocker-adblock'))) 'remove deleted the backup too - nothing left behind'
 
 Write-Host "`n[6] status reports the block as inactive"
 $r = Invoke-Engine -Arguments @('status', '-HostsPath', $HostsFile)
@@ -160,6 +162,9 @@ Assert-Equal 0 $r.Code 'a bad checksum does not fail the install'
 Assert-True ($r.Output -match 'checksum') 'warns that the checksum failed'
 Assert-True ((Get-FileBody) -match '127\.0\.0\.1 a\.example\.com') 'bundled list used'
 Assert-True (-not ((Get-FileBody) -match '127\.0\.0\.1 x\.example\.com')) 'unverified live domain NOT written'
+$tmpBase = Join-Path $env:TEMP 'statlocker-adblock-live-domains.txt'
+Assert-True (-not (Test-Path $tmpBase)) 'live list temp file cleaned up'
+Assert-True (-not (Test-Path ($tmpBase + '.sha256'))) 'live hash temp file cleaned up'
 
 Write-Host "`n[10] the DNS probe confirms a blocked domain resolves locally"
 Reset-HostsFile

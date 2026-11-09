@@ -133,6 +133,16 @@ class TestRefreshDomains(unittest.TestCase):
         self.assertEqual(code, 0, "an uppercase blocklist entry must still cover its domain")
         self.assertNotIn("cdn.intergient.com", out)
 
+    def test_page_structure_change_is_reported(self):
+        # The pages load fine, but the ad-config script can no longer be
+        # located. That is a change in Statlocker's pages, not a clean run.
+        def fetch(url):
+            return b"<html><body>the page looks completely different now</body></html>"
+
+        code, out, err, called = self._run(fetch)
+        self.assertEqual(code, 3, "a structure change must not look like a clean run")
+        self.assertIn("structure", err.lower())
+
 
 class TestApplyNewDomains(unittest.TestCase):
     def setUp(self):

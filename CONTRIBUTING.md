@@ -4,15 +4,15 @@
 
 | File | Role |
 |---|---|
-| `adblock.ps1` | The engine. Writes/removes a marked section in the Windows hosts file. Idempotent, verified, backed up. |
+| `adblock.ps1` | The engine. Writes/removes a marked section in the Windows hosts file. Idempotent, verified, backed up. `remove` deletes the backup. |
 | `Install AdBlock.bat` / `Remove AdBlock.bat` / `Check AdBlock Status.bat` | The user-facing entry points. Self-elevate via UAC. |
 | `domains.txt` | The blocklist. One domain per line. |
 | `domains.txt.sha256` | SHA-256 of the blocklist. The installer refuses a live list whose checksum does not match, so this must be updated in the same commit as `domains.txt`. `apply_new_domains.py` writes it for you. |
-| `tools/refresh_domains.py` | The watcher. Fetches Statlocker's public ad-surface pages and their Playwire/RAMP config, reports domains that are neither blocked nor whitelisted. |
+| `tools/refresh_domains.py` | The watcher. Fetches Statlocker's public ad-surface pages and their Playwire/RAMP config, reports domains that are neither blocked nor whitelisted, and reports a structure change when it can no longer find the ad config. |
 | `tools/apply_new_domains.py` | Appends watcher output to `domains.txt` and refreshes the checksum sidecar (used by the PR step). |
-| `.github/workflows/refresh-domains.yml` | Runs the watcher every 12h and opens a PR when the ad stack changes. |
-| `tests/test-engine.ps1` | Engine tests. Drives `adblock.ps1` against a throwaway hosts file: install, idempotency, checksum accept/reject, remove, status, DNS probe. |
-| `tests/test_watcher.py` | Watcher tests. Skip list, primary-vs-secondary failure handling, checksum sidecar. |
+| `.github/workflows/refresh-domains.yml` | Runs the watcher every 12h: a PR when the ad stack changes, an issue when the watcher cannot read it. |
+| `tests/test-engine.ps1` | Engine tests. Drives `adblock.ps1` against a throwaway hosts file: install, idempotency, checksum accept/reject, backup cleanup, remove, status, DNS probe, temp file cleanup. |
+| `tests/test_watcher.py` | Watcher tests. Skip list, primary-vs-secondary failure handling, structure-change detection, checksum sidecar, committed-list integrity. |
 
 ## Rules for touching `domains.txt`
 
@@ -45,11 +45,33 @@
 python tools/refresh_domains.py --verbose
 ```
 
-Exit 0 = nothing new. Exit 1 = new domains on stdout. Exit 2 = a primary
-source (a slot page or ramp.js) could not be fetched, so the run saw nothing
-and failed on purpose. (On a PC with the block installed, the ad CDN itself is
-unreachable - that's expected; the watcher still reads the slot pages, and
-GitHub Actions runs unblocked.)
+Exit codes:
+
+| Code | Meaning | What the workflow does |
+|---|---|---|
+| 0 | Nothing new | Clean run. Closes any open watcher issue. |
+| 1 | New domains on stdout | Opens a PR with the new domains appended. |
+| 2 | A primary source (a slot page or ramp.js) could not be fetched | Opens an issue, then fails the run. |
+| 3 | The pages loaded but the ad-config script could not be located | Opens an issue, then fails the run. |
+
+Exit 2 is usually a runner network problem and clears on its own. Exit 3
+means Statlocker changed how their ad pages are built, which needs a person.
+
+(On a PC with the block installed, the ad CDN itself is unreachable - that's
+expected; the watcher still reads the slot pages, and GitHub Actions runs
+unblocked.)
+
+## How the watcher's issues work
+
+The workflow matches issues by **exact title** (`Watcher could not read
+Statlocker ad pages`), not by search. GitHub's issue search index lags behind
+creation, so a search can miss an issue that was made seconds ago; the issues
+API does not. Only one such issue is ever open at a time, and the next clean
+run comments on it and closes it, so a stale alert cannot sit there making the
+repo look broken.
+
+The title is compared as a literal string in two `jq` filters. If you change
+the title, change it in both the error step and the clean step.
 
 ## Running the tests
 

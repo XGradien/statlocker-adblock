@@ -12,10 +12,12 @@ on:
     - cron: '0 */12 * * *'
   workflow_dispatch: {}
 
-# GITHUB_TOKEN is read-only by default on public repos; the PR step needs write.
+# GITHUB_TOKEN is read-only by default on public repos; the PR step needs write,
+# and the watcher opens an issue when it cannot do its job.
 permissions:
   contents: write
   pull-requests: write
+  issues: write
 
 jobs:
   watch:
@@ -49,8 +51,8 @@ jobs:
             printf 'NEW_DOMAINS<<WATCHER_EOF\n%s\nWATCHER_EOF\n' "$NEW_DOMAINS" >> "$GITHUB_ENV"
           else
             echo "status=error" >> "$GITHUB_OUTPUT"
+            echo "rc=$rc" >> "$GITHUB_OUTPUT"
             echo "watcher failed with exit $rc - see the log above"
-            exit 1
           fi
 
       - if: steps.watch.outputs.status == 'new'
@@ -88,3 +90,45 @@ jobs:
             automatically the next time they run **Install AdBlock.bat**
             (it fetches the live list from this repo).
           branch: watcher/new-domains
+
+      # A watcher that cannot read the ad pages is an exception, not a routine
+      # PR. Open an issue so it lands in notifications, and only ever one.
+      # The title is matched exactly rather than searched: GitHub's issue search
+      # index lags behind creation, so a search can miss an issue made seconds
+      # ago. The issues API does not.
+      - if: steps.watch.outputs.status == 'error'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          open="$(gh issue list --state open --limit 100 --json number,title --jq '[.[] | select(.title == "Watcher could not read Statlocker ad pages")] | length' 2>/dev/null || echo 0)"
+          if [ "$open" != "0" ]; then
+            echo "a watcher issue is already open - not creating another"
+          else
+            body=$(printf '%s\n' \
+              "The domain watcher could not do its job, so the blocklist is not being maintained until someone looks." \
+              "" \
+              "- Exit code: ${{ steps.watch.outputs.rc }}" \
+              "- Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
+              "" \
+              "What the exit code means:" \
+              "- **2** - a primary source (an ad page or the ad-config script) could not be fetched. Usually a runner network problem, and it often clears on the next run." \
+              "- **3** - the ad pages loaded, but the ad-config script could no longer be found in them. Statlocker most likely changed how their ad pages are built, and the watcher needs updating." \
+              "" \
+              "The watcher closes this issue by itself once it can read the pages again.")
+            gh issue create --title "Watcher could not read Statlocker ad pages" --body "$body" || echo "could not open an issue"
+          fi
+          echo "failing the run on purpose - the watcher saw nothing"
+          exit 1
+
+      # Once the watcher can read the pages again, close the alert so it does
+      # not sit open making the repo look broken.
+      - if: steps.watch.outputs.status == 'clean'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          ids="$(gh issue list --state open --limit 100 --json number,title --jq '.[] | select(.title == "Watcher could not read Statlocker ad pages") | .number')"
+          for n in $ids; do
+            gh issue comment "$n" --body "The watcher can read the ad pages again, so this looks resolved. Reopen it if the ads came back." || true
+            gh issue close "$n" || true
+          done
+          echo "watcher issue sweep finished"
