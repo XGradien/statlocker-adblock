@@ -170,41 +170,45 @@ switch ($Action) {
             $tmp = Join-Path $env:TEMP 'statlocker-adblock-live-domains.txt'
             $tmpHash = "$tmp.sha256"
             $hashUrl = if ($LiveHashUrl) { $LiveHashUrl } else { "$LiveDomainsUrl.sha256" }
-            Remove-Item $tmp -Force -ErrorAction SilentlyContinue
-            Remove-Item $tmpHash -Force -ErrorAction SilentlyContinue
-
-            # Fetch the list. Failing here only means offline.
             try {
-                [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-                Invoke-WebRequest -Uri $LiveDomainsUrl -OutFile $tmp -TimeoutSec 25 -UseBasicParsing
-            } catch {
-                Write-Host "Could not reach GitHub to check for list updates - using the bundled list."
-                Write-Host "(If you are offline this is normal. Re-run 'Install AdBlock.bat' later to pick up updates.)"
-            }
+                Remove-Item $tmp -Force -ErrorAction SilentlyContinue
+                Remove-Item $tmpHash -Force -ErrorAction SilentlyContinue
 
-            # Verify it before trusting it: an unverifiable list is not installed.
-            if (Test-Path $tmp) {
+                # Fetch the list. Failing here only means offline.
                 try {
-                    $live = Read-Domains $tmp
-                    if ($live.Count -lt 10 -or $live.Count -lt $domains.Count) {
-                        Write-Host "The live list from GitHub looks stale or incomplete - using the bundled list."
-                    } else {
-                        Invoke-WebRequest -Uri $hashUrl -OutFile $tmpHash -TimeoutSec 25 -UseBasicParsing
-                        $expected = (((Get-Content $tmpHash -Raw) -split '\s+')[0]).ToLower()
-                        $actual = (Get-FileHash -Path $tmp -Algorithm SHA256).Hash.ToLower()
-                        if ($expected -ne $actual) {
-                            throw "checksum mismatch (expected $expected, got $actual)"
-                        }
-                        $domains = $live
-                        $source = "the latest list from GitHub ($($live.Count) domains, checksum verified)"
-                    }
+                    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+                    Invoke-WebRequest -Uri $LiveDomainsUrl -OutFile $tmp -TimeoutSec 25 -UseBasicParsing
                 } catch {
-                    Write-Host "The live list from GitHub could not be verified - using the bundled list."
-                    Write-Host ("  (" + $_.Exception.Message + ")")
+                    Write-Host "Could not reach GitHub to check for list updates - using the bundled list."
+                    Write-Host "(If you are offline this is normal. Re-run 'Install AdBlock.bat' later to pick up updates.)"
                 }
+
+                # Verify it before trusting it: an unverifiable list is not installed.
+                if (Test-Path $tmp) {
+                    try {
+                        $live = Read-Domains $tmp
+                        if ($live.Count -lt 10 -or $live.Count -lt $domains.Count) {
+                            Write-Host "The live list from GitHub looks stale or incomplete - using the bundled list."
+                        } else {
+                            Invoke-WebRequest -Uri $hashUrl -OutFile $tmpHash -TimeoutSec 25 -UseBasicParsing
+                            $expected = (((Get-Content $tmpHash -Raw) -split '\s+')[0]).ToLower()
+                            $actual = (Get-FileHash -Path $tmp -Algorithm SHA256).Hash.ToLower()
+                            if ($expected -ne $actual) {
+                                throw "checksum mismatch (expected $expected, got $actual)"
+                            }
+                            $domains = $live
+                            $source = "the latest list from GitHub ($($live.Count) domains, checksum verified)"
+                        }
+                    } catch {
+                        Write-Host "The live list from GitHub could not be verified - using the bundled list."
+                        Write-Host ("  (" + $_.Exception.Message + ")")
+                    }
+                }
+            } finally {
+                # Whatever happens above, the downloaded list never outlives the run.
+                Remove-Item $tmp -Force -ErrorAction SilentlyContinue
+                Remove-Item $tmpHash -Force -ErrorAction SilentlyContinue
             }
-            Remove-Item $tmp -Force -ErrorAction SilentlyContinue
-            Remove-Item $tmpHash -Force -ErrorAction SilentlyContinue
         }
 
         # --- Write it ---
@@ -226,6 +230,7 @@ switch ($Action) {
         Write-Host ("Installed: " + $domains.Count + " ad domains are now blocked on this PC.")
         Write-Host ("  Source:  " + $source)
         Write-Host ("  Backup:  " + $HostsPath + '.bak-statlocker-adblock')
+        Write-Host "          (deleted automatically when you run Remove AdBlock.bat)"
         Write-Host ""
         Write-Host "Next step: quit the Statlocker companion app completely, then start it again."
         Write-Host "To undo at any time: double-click 'Remove AdBlock.bat' in this folder."
@@ -244,7 +249,12 @@ switch ($Action) {
         if (Get-Section ([System.IO.File]::ReadAllText($HostsPath))) {
             throw "Verification failed - the section is still present. Do not edit hosts manually; report this."
         }
+        # The backup exists only to undo a failed install. Leaving it behind after
+        # a clean removal is exactly the leftover this tool promises not to create.
+        $backup = $HostsPath + '.bak-statlocker-adblock'
+        if (Test-Path $backup) { Remove-Item $backup -Force }
         Write-Host "Removed: the ad block is off and your hosts file is back to how it was."
+        Write-Host "The backup file was deleted too, so nothing is left behind."
         Write-Host "Restart the Statlocker app if you want the ads back (they will return)."
         exit 0
     }

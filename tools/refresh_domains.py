@@ -15,7 +15,8 @@ Usage:
     python refresh_domains.py            # new domains printed to stdout, one
                                          # per line; exit 0 = nothing new,
                                          # exit 1 = new domains found,
-                                         # exit 2 = a primary source failed
+                                         # exit 2 = a primary source failed,
+                                         # exit 3 = the pages changed shape
     python refresh_domains.py --verbose  # also dump all observed hosts to stderr
 
 Designed to run unattended in GitHub Actions (no dependencies beyond the
@@ -113,6 +114,10 @@ def main():
     primary = set(to_fetch)
     extra_fetches = 0
     failed_fetches = 0
+    # True once the ad-config script has been located in a slot page. If the
+    # pages load but this never happens, the page structure has changed and
+    # the watcher is effectively blind - that must not look like a clean run.
+    ramp_found = False
 
     while to_fetch:
         url = to_fetch.pop(0)
@@ -137,6 +142,7 @@ def main():
         pub_m = re.search(r"PUB_ID\s*=\s*'(\d+)'", text)
         web_m = re.search(r"WEBSITE_ID\s*=\s*'(\d+)'", text)
         if host_m and pub_m and web_m and "ramp.js" in text:
+            ramp_found = True
             ramp_url = (
                 f"https://{host_m.group(1)}/{pub_m.group(1)}/{web_m.group(1)}/ramp.js"
             )
@@ -183,6 +189,19 @@ def main():
     if unknown:
         print("\n".join(unknown))
         return 1
+
+    if not ramp_found:
+        print(
+            "ERROR: the ad pages loaded, but the ad-config script could no longer "
+            "be located in them.",
+            file=sys.stderr,
+        )
+        print(
+            "# structure changed - the watcher cannot read the ad stack until this "
+            "is looked at",
+            file=sys.stderr,
+        )
+        return 3
     return 0
 
 

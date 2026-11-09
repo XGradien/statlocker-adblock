@@ -15,7 +15,7 @@ There is no program to install and no "download" button on the app — you downl
 <img src="assets/install-steps.svg" alt="Install in 4 steps: download the zip from Releases, unzip, double-click Install AdBlock.bat, restart app" width="860"/>
 
 1. **Get the files.** Open the [Releases page](https://github.com/XGradien/statlocker-adblock/releases/latest) and download the attached zip. Its name carries the version (`statlocker-adblock-v1.1.0.zip`); that link always jumps to the latest release, so the name will change as the tool updates.
-2. **Unzip.** Right-click the downloaded zip → **Extract All** → pick a folder (Desktop is fine).
+2. **Unzip.** Right-click the downloaded zip → **Extract All** → pick a folder you'll remember (Desktop is fine). You'll need this folder again to remove the block.
 3. **Install.** Open that folder and double-click **`Install AdBlock.bat`**. A Windows window pops up asking for permission — **click Yes**. You'll see "Done!".
 4. **Restart the app.** Quit Statlocker completely (right-click its tray icon → Quit), then start it again.
 
@@ -25,7 +25,9 @@ That's it. Ads gone.
 
 ## Undo (also 30 seconds)
 
-Double-click **`Remove AdBlock.bat`** in the same folder, click Yes. The marked section comes out of your hosts file and everything else in it is left untouched. Nothing was installed, so there is nothing to uninstall.
+Double-click **`Remove AdBlock.bat`** in the same folder, click Yes. The marked section comes out of your hosts file, everything else in it is left untouched, and the backup file the installer made is deleted too. Nothing was installed, so there is nothing to uninstall - and once the block is off, you can delete the whole folder.
+
+**Keep the folder until you've removed the block.** Removing it needs these same files, so if you throw it away now you'll have to download it again later to turn the block off. After `Remove AdBlock.bat` finishes, delete the folder and you're back to exactly how things were.
 
 ## "Do the ads come back after a while?"
 
@@ -46,7 +48,7 @@ If you installed a while ago and ads suddenly appear, just double-click **`Insta
 | Does it send my data anywhere? | **No.** It runs entirely offline on your PC. The only thing it touches online is this repo's domain list. |
 | Does it affect my game or my stats? | **No.** The app still signs in, uploads matches, and shows all stats. Only the *ad* requests die. |
 | Can it break my PC's internet? | **No.** Only the specific ad domains in the list are blocked — everything else resolves normally. |
-| Is it reversible? | **Completely.** Double-click `Remove AdBlock.bat`. A backup of your hosts file is kept at `C:\Windows\System32\drivers\etc\hosts.bak-statlocker-adblock`. |
+| Is it reversible? | **Completely.** Double-click `Remove AdBlock.bat`. It takes the block section out and deletes the backup it made, so nothing is left behind. |
 | Will I get banned in Deadlock? | This is not a game cheat — it's a personal DNS filter, the same kind of thing ad blockers do for your browser. The app itself works normally and reports normally. |
 
 <img src="assets/how-it-works.svg" alt="How it works: ad lookups are pointed at a dead address, app/Steam/data lookups are untouched" width="860"/>
@@ -64,6 +66,9 @@ You're probably offline — the tool just uses the list bundled with the folder 
 
 **It says the live list "could not be verified".**
 The list came down from GitHub but did not match its checksum, so the installer used the copy bundled with the folder instead. Your block still works. Run the install once more; if it keeps happening, [open an issue](https://github.com/XGradien/statlocker-adblock/issues/new).
+
+**I deleted the folder. How do I remove the block?**
+Download the zip again, unzip it, and run `Remove AdBlock.bat`. That's the whole fix, and it takes 30 seconds. If you're offline and can't re-download, you can open `C:\Windows\System32\drivers\etc\hosts` in Notepad (as an administrator) and delete the block between the two `# === statlocker-adblock` markers - but the .bat file does exactly that and checks its own work, so it's the safer path.
 
 **Ads still showing after install.**
 Make sure the app was *fully quit* (tray icon → Quit), not just window-closed. If it's still there, run `Check AdBlock Status.bat` and [open an issue](https://github.com/XGradien/statlocker-adblock/issues/new) with its output — the template walks you through it.
@@ -87,11 +92,11 @@ Not affiliated with Statlocker or Valve Corporation. "Statlocker" and "Deadlock"
 ## Technical notes (for the curious)
 
 - **Mechanism:** marked section in `C:\Windows\System32\drivers\etc\hosts` mapping each ad domain to `127.0.0.1`. Apex domains cover all subdomains via Windows DNS parent-chain lookup.
-- **Safety contract:** every write is idempotent, verified by read-back, and backed up to `hosts.bak-statlocker-adblock` first. A whitelist (app, Steam/Valve, video playback, CDN, cert/OCSP endpoints) guarantees the app's own traffic is never touched.
+- **Safety contract:** every write is idempotent, verified by read-back, and backed up to `hosts.bak-statlocker-adblock` first. A whitelist (app, Steam/Valve, video playback, CDN, cert/OCSP endpoints) guarantees the app's own traffic is never touched. `remove` deletes the backup, so a clean uninstall leaves nothing behind.
 - **List integrity:** `domains.txt` is published with a SHA-256 sidecar, `domains.txt.sha256`. `install` verifies the download against it before writing anything and falls back to the bundled list on any mismatch.
 - **Status check:** `status` resolves the first blocked domain through the OS resolver (which reads the hosts file) and reports whether it lands on `127.0.0.1`. `Resolve-DnsName` would be useless here - it asks the DNS server directly and never looks at the hosts file.
-- **Maintenance:** the [domain watcher](https://github.com/XGradien/statlocker-adblock/actions/workflows/refresh-domains.yml) (GitHub Actions, every 12h) fetches Statlocker's public ad-surface pages and their Playwire/RAMP config, diffs them against `domains.txt`, and opens a PR with anything new. See [CONTRIBUTING](CONTRIBUTING.md).
-- **Tests:** `tests/test-engine.ps1` drives the engine against a throwaway hosts file (install, idempotency, checksum accept and reject, remove, status, DNS probe) and `tests/test_watcher.py` covers the watcher's skip list, failure handling, and checksum sidecar. Both run on every push and pull request.
+- **Maintenance:** the [domain watcher](https://github.com/XGradien/statlocker-adblock/actions/workflows/refresh-domains.yml) (GitHub Actions, every 12h) fetches Statlocker's public ad-surface pages and their Playwire/RAMP config, diffs them against `domains.txt`, and opens a PR with anything new. If it cannot reach the pages, or the pages change shape so it can no longer find the ad config, it opens an issue instead and closes that issue by itself once it can read them again. See [CONTRIBUTING](CONTRIBUTING.md).
+- **Tests:** `tests/test-engine.ps1` (28 checks) drives the engine against a throwaway hosts file (install, idempotency, checksum accept and reject, backup cleanup, remove, status, DNS probe, temp file cleanup) and `tests/test_watcher.py` (16 checks) covers the watcher's skip list, failure and structure-change handling, the checksum sidecar, and the committed list's own integrity. Both run on every push and pull request.
 - **Known limitation:** if Statlocker ever starts serving ad creatives from their *own* domains, hosts blocking can't follow (it would break the app). The watcher will surface that; the fix would be a script/element filter à la uBlock.
 
 ## Files
