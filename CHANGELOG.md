@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.2.0 (2026-11-09)
+
+- README gains a before/after picture of the companion app: the two ad slots
+  (the tall one down the right edge, the wide one at the bottom-left) show as
+  flat gray placeholder boxes without the block, and are gone with it on.
+- `assets/before-after.png` is part of the release zip, so the README's new
+  image resolves from a downloaded copy and not only from the repo.
+
 ## 1.1.4 (2026-11-09)
 
 - `Check AdBlock Status.bat` reports whether the backup file actually exists

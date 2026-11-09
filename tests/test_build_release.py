@@ -30,6 +30,7 @@ EXPECTED = [
     "README.md",
     "assets/install-steps.svg",
     "assets/how-it-works.svg",
+    "assets/before-after.png",
 ]
 
 # Development files that must never reach a user.

@@ -78,10 +78,10 @@ the title, change it in both the error step and the clean step.
 ## Building a release
 
 ```
-python tools/build-release.py --version 1.1.3
+python tools/build-release.py --version 1.2.0
 ```
 
-Writes `dist/statlocker-adblock-v1.1.3.zip` and prints its size and SHA-256.
+Writes `dist/statlocker-adblock-v1.2.0.zip` and prints its size and SHA-256.
 `dist/` is gitignored, so builds are local products rather than commits.
 
 Only the files a user needs go into the zip: the three `.bat` entry points,

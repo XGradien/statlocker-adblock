@@ -8,13 +8,21 @@ You play Deadlock. You love checking your stats. You do not want the companion a
 
 ---
 
+## What it looks like
+
+The companion app reserves two slots for ads: a tall one down the right edge and a wide one at the bottom-left. Without the block they sit there as flat gray placeholder boxes. With the block on, the boxes are gone and the app's own background shows through - the stats, the match history, sign-in, everything else is untouched.
+
+<img src="assets/before-after.png" alt="Before and after: the Statlocker companion app showing gray ad placeholder boxes on the right edge and bottom-left, then the same app with those boxes gone" width="860"/>
+
+---
+
 ## Install (30 seconds, no technical knowledge needed)
 
 There is no program to install and no "download" button on the app — you download the **folder** from the [Releases page](https://github.com/XGradien/statlocker-adblock/releases/latest):
 
 <img src="assets/install-steps.svg" alt="Install in 4 steps: download the zip from Releases, unzip, double-click Install AdBlock.bat, restart app" width="860"/>
 
-1. **Get the files.** Open the [Releases page](https://github.com/XGradien/statlocker-adblock/releases/latest) and download the attached zip. Its name carries the version (`statlocker-adblock-v1.1.3.zip`); that link always jumps to the latest release, so the name will change as the tool updates.
+1. **Get the files.** Open the [Releases page](https://github.com/XGradien/statlocker-adblock/releases/latest) and download the attached zip. Its name carries the version (`statlocker-adblock-v1.2.0.zip`); that link always jumps to the latest release, so the name will change as the tool updates.
 2. **Unzip.** Right-click the downloaded zip → **Extract All** → pick a folder you'll remember (Desktop is fine). You'll need this folder again to remove the block.
 3. **Install.** Open that folder and double-click **`Install AdBlock.bat`**. A Windows window pops up asking for permission — **click Yes**. You'll see "Done!".
 4. **Restart the app.** Quit Statlocker completely (right-click its tray icon → Quit), then start it again.

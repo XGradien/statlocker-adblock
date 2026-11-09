@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Build the user-facing release zip into dist/.
 
-    python tools/build-release.py --version 1.1.3
+    python tools/build-release.py --version 1.2.0
 
 Only the files a user needs go into the zip: the three .bat entry points, the
 engine, the blocklist, the README, and the images it references. The repo's
@@ -28,6 +28,7 @@ SHIPPED_FILES = [
     "README.md",
     "assets/install-steps.svg",
     "assets/how-it-works.svg",
+    "assets/before-after.png",
 ]
 
 # cmd.exe parses these, so they must be CRLF in the zip. The working copy is
